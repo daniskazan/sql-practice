@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+  postgres:
+    image: "postgres:16.1"
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./infra/postgres-data:/var/lib/postgresql/data
+      - ./dump/demo-medium-20170815.sql:/dump/dump.sql
+    ports:
+      - "15432:5432"
+    restart: unless-stopped
+    container_name: pg-${ENVIRONMENT_NAME:-local}
+    healthcheck:
+      test: pg_isready -U postgres -d postgres
+      interval: 30s
+      timeout: 3s
+      retries: 3
