@@ -17,3 +17,34 @@ services:
       interval: 30s
       timeout: 3s
       retries: 3
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    container_name: prometheus-${ENVIRONMENT_NAME:-local}
+    volumes:
+      - ./infra/prometheus-data:/etc/prometheus
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    ports:
+      - "9100:9100"
+    container_name: node-exporter-${ENVIRONMENT_NAME:-local}
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    container_name: grafana-${ENVIRONMENT_NAME:-local}
+    volumes:
+      - ./infra/grafana-data:/var/lib/grafana
